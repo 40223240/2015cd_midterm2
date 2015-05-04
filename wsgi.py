@@ -1,5 +1,3 @@
-#@+leo-ver=5-thin
-#@+node:2014fall.20141212095015.1775: * @file wsgi.py
 # coding=utf-8
 # 上面的程式內容編碼必須在程式的第一或者第二行才會有作用
 
@@ -7,18 +5,14 @@
 # 導入 cherrypy 模組, 為了在 OpenShift 平台上使用 cherrypy 模組, 必須透過 setup.py 安裝
 
 
-#@@language python
-#@@tabwidth -4
 
-#@+<<declarations>>
-#@+node:2014fall.20141212095015.1776: ** <<declarations>> (wsgi)
 import cherrypy
 # 導入 Python 內建的 os 模組, 因為 os 模組為 Python 內建, 所以無需透過 setup.py 安裝
 import os
 # 導入 random 模組
 import random
 # 導入 gear 模組
-import gear
+#import gear
 
 ################# (2) 廣域變數設定區
 # 確定程式檔案所在目錄, 在 Windows 下有最後的反斜線
@@ -33,23 +27,13 @@ else:
     download_root_dir = _curdir + "/local_data/"
     data_dir = _curdir + "/local_data/"
 
-'''以下為近端 input() 與 for 迴圈應用的程式碼, 若要將程式送到 OpenShift 執行, 除了採用 CherryPy 網際框架外, 還要轉為 html 列印
-# 利用 input() 取得的資料型別為字串
-toprint = input("要印甚麼內容?")
-# 若要將 input() 取得的字串轉為整數使用, 必須利用 int() 轉換
-repeat_no = int(input("重複列印幾次?"))
-for i in range(repeat_no):
-    print(toprint)
-'''
-#@-<<declarations>>
-#@+others
-#@+node:2014fall.20141212095015.1777: ** class Hello
+
 ################# (3) 程式類別定義區
 # 以下改用 CherryPy 網際框架程式架構
 # 以下為 Hello 類別的設計內容, 其中的 object 使用, 表示 Hello 類別繼承 object 的所有特性, 包括方法與屬性設計
-class Hello(object):
+class Midterm(object):
 
-    # Hello 類別的啟動設定
+    # Midterm 類別的啟動設定
     _cp_config = {
     'tools.encode.encoding': 'utf-8',
     'tools.sessions.on' : True,
@@ -61,37 +45,45 @@ class Hello(object):
     'tools.sessions.timeout' : 60
     }
 
-    #@+others
-    #@+node:2014fall.20141212095015.2004: *3* __init__
     def __init__(self):
-        # 配合透過案例啟始建立所需的目錄
-        if not os.path.isdir(data_dir+'/tmp'):
-            os.mkdir(data_dir+'/tmp')
-        if not os.path.isdir(data_dir+"/downloads"):
-            os.mkdir(data_dir+"/downloads")
-        if not os.path.isdir(data_dir+"/images"):
-            os.mkdir(data_dir+"/images")
-    #@+node:2014fall.20141212095015.1778: *3* index_orig
+        # hope to create downloads and images directories　
+        if not os.path.isdir(download_root_dir+"downloads"):
+            try:
+                os.makedirs(download_root_dir+"downloads")
+            except:
+                print("mkdir error")
+        if not os.path.isdir(download_root_dir+"images"):
+            try:
+                os.makedirs(download_root_dir+"images")
+            except:
+                print("mkdir error")
+        if not os.path.isdir(download_root_dir+"tmp"):
+            try:
+                os.makedirs(download_root_dir+"tmp")
+            except:
+                print("mkdir error")
     # 以 @ 開頭的 cherrypy.expose 為 decorator, 用來表示隨後的成員方法, 可以直接讓使用者以 URL 連結執行
     @cherrypy.expose
     # index 方法為 CherryPy 各類別成員方法中的內建(default)方法, 當使用者執行時未指定方法, 系統將會優先執行 index 方法
     # 有 self 的方法為類別中的成員方法, Python 程式透過此一 self 在各成員方法間傳遞物件內容
-    def index_orig(self, toprint="40223240"):
-        return toprint
-    #@+node:2014fall.20141212095015.1779: *3* hello
+    def index(self):
+        outstring = '''
+        <!DOCTYPE html> 
+        <html>
+        <head>
+        <meta http-equiv="content-type" content="text/html;charset=utf-8">
+        </head>
+        <body>
+        <a href="spur">spur</a><br />
+        <a href="drawspur">drawspur</a><br />
+        </body>
+        </html>
+        '''
+        
+        return outstring
     @cherrypy.expose
-    def hello(self, toprint="Hello World!"):
-        return toprint
-    #@+node:2014fall.20141215194146.1791: *3* index
-    @cherrypy.expose
-    def index(self, guess=None):
-        # 將標準答案存入 answer session 對應區
-        theanswer = random.randint(1, 100)
-        thecount = 0
-        # 將答案與計算次數變數存進 session 對應變數
-        cherrypy.session['answer'] = theanswer
-        cherrypy.session['count'] = thecount
-        # 印出讓使用者輸入的超文件表單
+    # N 為齒數, M 為模數, P 為壓力角
+    def spur(self, N=20, M=5, P=15):
         outstring = '''
     <!DOCTYPE html> 
     <html>
@@ -99,429 +91,87 @@ class Hello(object):
     <meta http-equiv="content-type" content="text/html;charset=utf-8">
     <!-- 載入 brython.js -->
     <script type="text/javascript" src="/static/Brython3.1.1-20150328-091302/brython.js"></script>
-    <script src="/static/Cango2D.js" type="text/javascript"></script>
-    <script src="/static/gearUtils-04.js" type="text/javascript"></script>
     </head>
     <!-- 啟動 brython() -->
     <body onload="brython()">
         
-    <form method=POST action=doCheck>
-    請輸入您所猜的整數:<input type=text name=guess><br />
+    <form method=POST action=spuraction>
+    齒數:<input type=text name=N value='''+str(N)+'''><br />
+    模數:<input type=text name=M value = '''+str(M)+'''><br />
+    壓力角:<input type=text name=P value = '''+str(P)+'''><br />
     <input type=submit value=send>
     </form>
-    <hr>
-    <!-- 以下在網頁內嵌 Brython 程式 -->
-    <script type="text/python">
-    from browser import document, alert
-
-    def echo(ev):
-        alert(document["zone"].value)
-
-    # 將文件中名稱為 mybutton 的物件, 透過 click 事件與 echo 函式 bind 在一起
-    document['mybutton'].bind('click',echo)
-    </script>
-    <input id="zone"><button id="mybutton">click !</button>
-    <hr>
-    <!-- 以下為 canvas 畫圖程式 -->
-    <script type="text/python">
-    # 從 browser 導入 document
-    from browser import document
-    import math
-
-    # 畫布指定在名稱為 plotarea 的 canvas 上
-    # 以下使用中文變數名稱
-    canvas = document["plotarea"]
-    ctx = canvas.getContext("2d")
-
-    # 用紅色畫一條直線
-    ctx.beginPath()
-    ctx.lineWidth = 3
-    ctx.moveTo(0, 0)
-    ctx.lineTo(0, 500)
-    ctx.strokeStyle = "red"
-    ctx.stroke()
-
-    # 用藍色再畫一條直線
-    ctx.beginPath()
-    ctx.lineWidth = 3
-    ctx.moveTo(0, 0)
-    ctx.lineTo(500, 0)
-    ctx.strokeStyle = "blue"
-    ctx.stroke()
-
-    # 用綠色再畫一條直線
-    ctx.beginPath()
-    ctx.lineWidth = 3
-    ctx.moveTo(0, 0)
-    ctx.lineTo(500, 500)
-    ctx.strokeStyle = "green"
-    ctx.stroke()
-
-    # 用黑色畫一個圓
-    ctx.beginPath()
-    ctx.lineWidth = 3
-    ctx.strokeStyle = "black"
-    ctx.arc(250,250,50,0,2*math.pi)
-    ctx.stroke()
-    </script>
-    <canvas id="plotarea" width="800" height="600"></canvas>
+    <br /><a href="index">index</a><br />
     </body>
     </html>
     '''
 
         return outstring
-    #@+node:2015.20150330144929.1713: *3* twoDgear
     @cherrypy.expose
     # N 為齒數, M 為模數, P 為壓力角
-    def twoDgear(self, N=20, M=5, P=15):
-        outstring = '''
-    <!DOCTYPE html> 
-    <html>
-    <head>
-    <meta http-equiv="content-type" content="text/html;charset=utf-8">
-    <!-- 載入 brython.js -->
-    <script type="text/javascript" src="/static/Brython3.1.1-20150328-091302/brython.js"></script>
-    <script src="/static/Cango2D.js" type="text/javascript"></script>
-    <script src="/static/gearUtils-04.js" type="text/javascript"></script>
-    </head>
-    <!-- 啟動 brython() -->
-    <body onload="brython()">
-    40223240 楊濬豪
-    <form method=POST action=do2Dgear>
-    齒數:<input type=text name=N><br />
-    模數:<input type=text name=M><br />
-    壓力角:<input type=text name=P><br />
-    <input type=submit value=send>
-    </form>
-    </body>
-    </html>
-    '''
-
-        return outstring
-    #@+node:2015.20150331094055.1733: *3* threeDgear
-    @cherrypy.expose
-    # N 為齒數, M 為模數, P 為壓力角
-    def threeDgear(self, N=20, M=5, P=15):
-        outstring = '''
-    <!DOCTYPE html> 
-    <html>
-    <head>
-    <meta http-equiv="content-type" content="text/html;charset=utf-8">
-    <!-- 載入 brython.js -->
-    <script type="text/javascript" src="/static/Brython3.1.1-20150328-091302/brython.js"></script>
-    <script src="/static/Cango2D.js" type="text/javascript"></script>
-    <script src="/static/gearUtils-04.js" type="text/javascript"></script>
-    </head>
-    <!-- 啟動 brython() -->
-    <body onload="brython()">
+    def spuraction(self, N=20, M=5, P=15):
+        output = '''
+        <!doctype html><html>
+        <head>
+        <meta http-equiv="content-type" content="text/html;charset=utf-8">
+        <title>2015CD Midterm</title>
+        </head> 
+        <body>
+        '''
+        output += "齒數為"+str(N)+"<br />"
+        output += "模數為"+str(M)+"<br />"
+        output += "壓力角為"+str(P)+"<br />"
+        output +='''<br /><a href="/spur">spur</a>(按下後再輸入)<br />'''
+        output +='''<br /><a href="index">index</a><br />
+        </body>
+        </html>
+        '''
         
-    <form method=POST action=do3Dgear>
-    齒數:<input type=text name=N><br />
-    模數:<input type=text name=M><br />
-    壓力角:<input type=text name=P><br />
-    <input type=submit value=send>
+        return output
+        
+        
+    @cherrypy.expose
+    # N 為齒數, M 為模數, P 為壓力角
+    def drawspur(self, N=20, M=5, P=15):
+        outstring = '''
+    <!DOCTYPE html> 
+    <html>
+    <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    </head>
+    <body>
+        
+    <form method=POST action=drawspuraction>
+    齒數:<input type=text name=N value='''+str(N)+'''><br />
+    模數:<input type=text name=M value = '''+str(M)+'''><br />
+    壓力角:<input type=text name=P value = '''+str(P)+'''><br />
+    <input type=submit value=畫出正齒輪輪廓>
     </form>
-    </body>
-    </html>
-    '''
-
-        return outstring
-    #@+node:2015.20150330144929.1762: *3* do2Dgear
-    @cherrypy.expose
-    # N 為齒數, M 為模數, P 為壓力角
-    def do2Dgear(self, N=20, M=5, P=15):
-        outstring = '''
-    <!DOCTYPE html> 
-    <html>
-    <head>
-    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <br /><a href="index">index</a><br />
     <!-- 載入 brython.js -->
     <script type="text/javascript" src="/static/Brython3.1.1-20150328-091302/brython.js"></script>
-    <script src="/static/Cango2D.js" type="text/javascript"></script>
-    <script src="/static/gearUtils-04.js" type="text/javascript"></script>
-    </head>
-    <!-- 啟動 brython() -->
-    <body onload="brython()">
-    <!-- 以下為 canvas 畫圖程式 -->
-    <script type="text/python">
-    # 從 browser 導入 document
-    from browser import document
-    import math
-
-    # 畫布指定在名稱為 plotarea 的 canvas 上
-    canvas = document["plotarea"]
-    ctx = canvas.getContext("2d")
-
-    # 用紅色畫一條直線
-    ctx.beginPath()
-    ctx.lineWidth = 3
-    '''
-        outstring += '''
-    ctx.moveTo('''+str(N)+","+str(M)+")"
-        outstring += '''
-    ctx.lineTo(0, 500)
-    ctx.strokeStyle = "red"
-    ctx.stroke()
-
-    # 用藍色再畫一條直線
-    ctx.beginPath()
-    ctx.lineWidth = 3
-    ctx.moveTo(0, 0)
-    ctx.lineTo(500, 0)
-    ctx.strokeStyle = "blue"
-    ctx.stroke()
-
-    # 用綠色再畫一條直線
-    ctx.beginPath()
-    ctx.lineWidth = 3
-    ctx.moveTo(0, 0)
-    ctx.lineTo(500, 500)
-    ctx.strokeStyle = "green"
-    ctx.stroke()
-
-    # 用黑色畫一個圓
-    ctx.beginPath()
-    ctx.lineWidth = 3
-    ctx.strokeStyle = "black"
-    ctx.arc(250,250,50,0,2*math.pi)
-    ctx.stroke()
+    <script>
+    window.onload=function(){
+    brython();
+    }
     </script>
-    <canvas id="plotarea" width="800" height="600"></canvas>
     </body>
     </html>
     '''
 
         return outstring
-    #@+node:2015.20150331094055.1735: *3* do3Dgear
     @cherrypy.expose
     # N 為齒數, M 為模數, P 為壓力角
-    def do3Dgear(self, N=20, M=5, P=15):
+    def drawspuraction(self, N=20, M=5, P=15):
         outstring = '''
     <!DOCTYPE html> 
     <html>
     <head>
     <meta http-equiv="content-type" content="text/html;charset=utf-8">
-    <!-- 載入 brython.js -->
-    <script type="text/javascript" src="/static/Brython3.1.1-20150328-091302/brython.js"></script>
-    <script src="/static/Cango2D.js" type="text/javascript"></script>
-    <script src="/static/gearUtils-04.js" type="text/javascript"></script>
     </head>
-    <!-- 啟動 brython() -->
-    <body onload="brython()">
-    <!-- 以下為 canvas 畫圖程式 -->
-    <script type="text/python">
-    # 從 browser 導入 document
-    from browser import document
-    import math
-
-    # 畫布指定在名稱為 plotarea 的 canvas 上
-    canvas = document["plotarea"]
-    ctx = canvas.getContext("2d")
-
-    # 用紅色畫一條直線
-    ctx.beginPath()
-    ctx.lineWidth = 3
-    '''
-        outstring += '''
-    ctx.moveTo('''+str(N)+","+str(M)+")"
-        outstring += '''
-    ctx.lineTo(0, 500)
-    ctx.strokeStyle = "red"
-    ctx.stroke()
-
-    # 用藍色再畫一條直線
-    ctx.beginPath()
-    ctx.lineWidth = 3
-    ctx.moveTo(0, 0)
-    ctx.lineTo(500, 0)
-    ctx.strokeStyle = "blue"
-    ctx.stroke()
-
-    # 用綠色再畫一條直線
-    ctx.beginPath()
-    ctx.lineWidth = 3
-    ctx.moveTo(0, 0)
-    ctx.lineTo(500, 500)
-    ctx.strokeStyle = "green"
-    ctx.stroke()
-
-    # 用黑色畫一個圓
-    ctx.beginPath()
-    ctx.lineWidth = 3
-    ctx.strokeStyle = "black"
-    ctx.arc(250,250,50,0,2*math.pi)
-    ctx.stroke()
-    </script>
-    <canvas id="plotarea" width="800" height="600"></canvas>
-    </body>
-    </html>
-    '''
-
-        return outstring
-    #@+node:2015.20150330144929.1765: *3* mygeartest
-    @cherrypy.expose
-    # N 為齒數, M 為模數, P 為壓力角
-    def mygeartest(self, N=20, M=5, P=15):
-        outstring = '''
-    <!DOCTYPE html> 
-    <html>
-    <head>
-    <meta http-equiv="content-type" content="text/html;charset=utf-8">
-    <!-- 載入 brython.js -->
-    <script type="text/javascript" src="/static/Brython3.1.1-20150328-091302/brython.js"></script>
-    <script src="/static/Cango2D.js" type="text/javascript"></script>
-    <script src="/static/gearUtils-04.js" type="text/javascript"></script>
-    </head>
-    <!-- 啟動 brython() -->
-    <body onload="brython()">
-
-    <!-- 以下為 canvas 畫圖程式 -->
-    <script type="text/python">
-    # 從 browser 導入 document
-    from browser import document
-    from math import *
-
-    # 準備在 id="plotarea" 的 canvas 中繪圖
-    canvas = document["plotarea"]
-    ctx = canvas.getContext("2d")
-
-    def create_line(x1, y1, x2, y2, width=3, fill="red"):
-    	ctx.beginPath()
-    	ctx.lineWidth = width
-    	ctx.moveTo(x1, y1)
-    	ctx.lineTo(x2, y2)
-    	ctx.strokeStyle = fill
-    	ctx.stroke()
-
-    # 導入數學函式後, 圓周率為 pi
-    # deg 為角度轉為徑度的轉換因子
-    deg = pi/180.
-    #
-    # 以下分別為正齒輪繪圖與主 tkinter 畫布繪圖
-    #
-    # 定義一個繪正齒輪的繪圖函式
-    # midx 為齒輪圓心 x 座標
-    # midy 為齒輪圓心 y 座標
-    # rp 為節圓半徑, n 為齒數
-    def 齒輪(midx, midy, rp, n, 顏色):
-        # 將角度轉換因子設為全域變數
-        global deg
-        # 齒輪漸開線分成 15 線段繪製
-        imax = 15
-        # 在輸入的畫布上繪製直線, 由圓心到節圓 y 軸頂點畫一直線
-        create_line(midx, midy, midx, midy-rp)
-        # 畫出 rp 圓, 畫圓函式尚未定義
-        #create_oval(midx-rp, midy-rp, midx+rp, midy+rp, width=2)
-        # a 為模數 (代表公制中齒的大小), 模數為節圓直徑(稱為節徑)除以齒數
-        # 模數也就是齒冠大小
-        a=2*rp/n
-        # d 為齒根大小, 為模數的 1.157 或 1.25倍, 這裡採 1.25 倍
-        d=2.5*rp/n
-        # ra 為齒輪的外圍半徑
-        ra=rp+a
-        print("ra:", ra)
-        # 畫出 ra 圓, 畫圓函式尚未定義
-        #create_oval(midx-ra, midy-ra, midx+ra, midy+ra, width=1)
-        # rb 則為齒輪的基圓半徑
-        # 基圓為漸開線長齒之基準圓
-        rb=rp*cos(20*deg)
-        print("rp:", rp)
-        print("rb:", rb)
-        # 畫出 rb 圓 (基圓), 畫圓函式尚未定義
-        #create_oval(midx-rb, midy-rb, midx+rb, midy+rb, width=1)
-        # rd 為齒根圓半徑
-        rd=rp-d
-        # 當 rd 大於 rb 時
-        print("rd:", rd)
-        # 畫出 rd 圓 (齒根圓), 畫圓函式尚未定義
-        #create_oval(midx-rd, midy-rd, midx+rd, midy+rd, width=1)
-        # dr 則為基圓到齒頂圓半徑分成 imax 段後的每段半徑增量大小
-        # 將圓弧分成 imax 段來繪製漸開線
-        dr=(ra-rb)/imax
-        # tan(20*deg)-20*deg 為漸開線函數
-        sigma=pi/(2*n)+tan(20*deg)-20*deg
-        for j in range(n):
-            ang=-2.*j*pi/n+sigma
-            ang2=2.*j*pi/n+sigma
-            lxd=midx+rd*sin(ang2-2.*pi/n)
-            lyd=midy-rd*cos(ang2-2.*pi/n)
-            #for(i=0;i<=imax;i++):
-            for i in range(imax+1):
-                r=rb+i*dr
-                theta=sqrt((r*r)/(rb*rb)-1.)
-                alpha=theta-atan(theta)
-                xpt=r*sin(alpha-ang)
-                ypt=r*cos(alpha-ang)
-                xd=rd*sin(-ang)
-                yd=rd*cos(-ang)
-                # i=0 時, 繪線起點由齒根圓上的點, 作為起點
-                if(i==0):
-                    last_x = midx+xd
-                    last_y = midy-yd
-                # 由左側齒根圓作為起點, 除第一點 (xd,yd) 齒根圓上的起點外, 其餘的 (xpt,ypt)則為漸開線上的分段點
-                create_line((midx+xpt),(midy-ypt),(last_x),(last_y),fill=顏色)
-                # 最後一點, 則為齒頂圓
-                if(i==imax):
-                    lfx=midx+xpt
-                    lfy=midy-ypt
-                last_x = midx+xpt
-                last_y = midy-ypt
-            # the line from last end of dedendum point to the recent
-            # end of dedendum point
-            # lxd 為齒根圓上的左側 x 座標, lyd 則為 y 座標
-            # 下列為齒根圓上用來近似圓弧的直線
-            create_line((lxd),(lyd),(midx+xd),(midy-yd),fill=顏色)
-            #for(i=0;i<=imax;i++):
-            for i in range(imax+1):
-                r=rb+i*dr
-                theta=sqrt((r*r)/(rb*rb)-1.)
-                alpha=theta-atan(theta)
-                xpt=r*sin(ang2-alpha)
-                ypt=r*cos(ang2-alpha)
-                xd=rd*sin(ang2)
-                yd=rd*cos(ang2)
-                # i=0 時, 繪線起點由齒根圓上的點, 作為起點
-                if(i==0):
-                    last_x = midx+xd
-                    last_y = midy-yd
-                # 由右側齒根圓作為起點, 除第一點 (xd,yd) 齒根圓上的起點外, 其餘的 (xpt,ypt)則為漸開線上的分段點
-                create_line((midx+xpt),(midy-ypt),(last_x),(last_y),fill=顏色)
-                # 最後一點, 則為齒頂圓
-                if(i==imax):
-                    rfx=midx+xpt
-                    rfy=midy-ypt
-                last_x = midx+xpt
-                last_y = midy-ypt
-            # lfx 為齒頂圓上的左側 x 座標, lfy 則為 y 座標
-            # 下列為齒頂圓上用來近似圓弧的直線
-            create_line(lfx,lfy,rfx,rfy,fill=顏色)
-
-    齒輪(400,400,300,41,"blue")
-
-    </script>
-    <canvas id="plotarea" width="800" height="800"></canvas>
-    </body>
-    </html>
-    '''
-
-        return outstring
-    #@+node:amd.20150415215023.1: *3* mygeartest2
-    @cherrypy.expose
-    # N 為齒數, M 為模數, P 為壓力角
-    def mygeartest2(self, N=20, M=5, P=15):
-        outstring = '''
-    <!DOCTYPE html> 
-    <html>
-    <head>
-    <meta http-equiv="content-type" content="text/html;charset=utf-8">
-    <!-- 載入 brython.js -->
-    <script type="text/javascript" src="/static/Brython3.1.1-20150328-091302/brython.js"></script>
-    <script src="/static/Cango2D.js" type="text/javascript"></script>
-    <script src="/static/gearUtils-04.js" type="text/javascript"></script>
-    </head>
-    <!-- 啟動 brython() -->
-    <body onload="brython()">
-    40223240 楊濬豪
+    <body>
+    <a href="index">index</a><br />
+        
     <!-- 以下為 canvas 畫圖程式 -->
     <script type="text/python">
     # 從 browser 導入 document
@@ -534,222 +184,144 @@ class Hello(object):
     canvas = document["plotarea"]
     ctx = canvas.getContext("2d")
 
-    # 以下利用 spur.py 程式進行繪圖, 接下來的協同設計運算必須要配合使用者的需求進行設計運算與繪圖
-    # 其中並將工作分配給其他組員建立類似 spur.py 的相關零件繪圖模組
-    # midx, midy 為齒輪圓心座標, rp 為節圓半徑, n 為齒數, pa 為壓力角, color 為線的顏色
-    # Gear(midx, midy, rp, n=20, pa=20, color="black"):
-    # 模數決定齒的尺寸大小, 囓合齒輪組必須有相同的模數與壓力角
-    # 壓力角 pa 單位為角度
-    n1_g = int(input("齒數"))
-    m = int(input("模數"))
-    pa = int(input("壓力角"))
-    # 計算三齒輪的節圓半徑
-    rp_g1 = m*n_g1/2
+    # 以下利用 spur.py 程式進行繪圖
+    # N 為齒數
+    N = '''+str(N)+'''
+    # M 為模數
+    M = '''+str(M)+'''
+    # 壓力角 P 單位為角度
+    P = '''+str(P)+'''
+    # 計算兩齒輪的節圓半徑
+    rp = N*M/2
 
-    # 將第1齒輪順時鐘轉 90 度
-    # 使用 ctx.save() 與 ctx.restore() 以確保各齒輪以相對座標進行旋轉繪圖
-    ctx.save()
-    # translate to the origin of second gear
-    ctx.translate(400,400)
-    # rotate to engage
-    ctx.rotate(pi/2)
-    # put it back
-    ctx.translate(-400,-400)
-    spur.Spur(ctx).Gear(400,400,rp_g1,n_g1, pa, "blue")
-    ctx.restore()
-
-
+    spur.Spur(ctx).Gear(600, 600, rp, N, P, "blue")
 
     </script>
     <canvas id="plotarea" width="1200" height="1200"></canvas>
+    <!-- 載入 brython.js -->
+    <script type="text/javascript" src="/static/Brython3.1.1-20150328-091302/brython.js"></script>
+    <script>
+    window.onload=function(){
+    brython();
+    }
+    </script>
     </body>
     </html>
     '''
 
         return outstring
-    #@+node:2015.20150331094055.1737: *3* my3Dgeartest
     @cherrypy.expose
-    # N 為齒數, M 為模數, P 為壓力角
-    def my3Dgeartest(self, N=20, M=5, P=15):
+    # W 為正方體的邊長
+    def cube(self, W=10):
         outstring = '''
     <!DOCTYPE html> 
     <html>
     <head>
     <meta http-equiv="content-type" content="text/html;charset=utf-8">
-    <!-- 載入 brython.js -->
-    <script type="text/javascript" src="/static/Brython3.1.1-20150328-091302/brython.js"></script>
-    <script src="/static/Cango2D.js" type="text/javascript"></script>
-    <script src="/static/gearUtils-04.js" type="text/javascript"></script>
     </head>
-    <!-- 啟動 brython() -->
-    <body onload="brython()">
-
-    <!-- 以下為 canvas 畫圖程式 -->
-    <script type="text/python">
-    # 從 browser 導入 document
-    from browser import document
-    from math import *
-
-    # 準備在 id="plotarea" 的 canvas 中繪圖
-    canvas = document["plotarea"]
-    ctx = canvas.getContext("2d")
-
-    def create_line(x1, y1, x2, y2, width=3, fill="red"):
-    	ctx.beginPath()
-    	ctx.lineWidth = width
-    	ctx.moveTo(x1, y1)
-    	ctx.lineTo(x2, y2)
-    	ctx.strokeStyle = fill
-    	ctx.stroke()
-
-    # 導入數學函式後, 圓周率為 pi
-    # deg 為角度轉為徑度的轉換因子
-    deg = pi/180.
-    #
-    # 以下分別為正齒輪繪圖與主 tkinter 畫布繪圖
-    #
-    # 定義一個繪正齒輪的繪圖函式
-    # midx 為齒輪圓心 x 座標
-    # midy 為齒輪圓心 y 座標
-    # rp 為節圓半徑, n 為齒數
-    def gear(midx, midy, rp, n, 顏色):
-        # 將角度轉換因子設為全域變數
-        global deg
-        # 齒輪漸開線分成 15 線段繪製
-        imax = 15
-        # 在輸入的畫布上繪製直線, 由圓心到節圓 y 軸頂點畫一直線
-        create_line(midx, midy, midx, midy-rp)
-        # 畫出 rp 圓, 畫圓函式尚未定義
-        #create_oval(midx-rp, midy-rp, midx+rp, midy+rp, width=2)
-        # a 為模數 (代表公制中齒的大小), 模數為節圓直徑(稱為節徑)除以齒數
-        # 模數也就是齒冠大小
-        a=2*rp/n
-        # d 為齒根大小, 為模數的 1.157 或 1.25倍, 這裡採 1.25 倍
-        d=2.5*rp/n
-        # ra 為齒輪的外圍半徑
-        ra=rp+a
-        print("ra:", ra)
-        # 畫出 ra 圓, 畫圓函式尚未定義
-        #create_oval(midx-ra, midy-ra, midx+ra, midy+ra, width=1)
-        # rb 則為齒輪的基圓半徑
-        # 基圓為漸開線長齒之基準圓
-        rb=rp*cos(20*deg)
-        print("rp:", rp)
-        print("rb:", rb)
-        # 畫出 rb 圓 (基圓), 畫圓函式尚未定義
-        #create_oval(midx-rb, midy-rb, midx+rb, midy+rb, width=1)
-        # rd 為齒根圓半徑
-        rd=rp-d
-        # 當 rd 大於 rb 時
-        print("rd:", rd)
-        # 畫出 rd 圓 (齒根圓), 畫圓函式尚未定義
-        #create_oval(midx-rd, midy-rd, midx+rd, midy+rd, width=1)
-        # dr 則為基圓到齒頂圓半徑分成 imax 段後的每段半徑增量大小
-        # 將圓弧分成 imax 段來繪製漸開線
-        dr=(ra-rb)/imax
-        # tan(20*deg)-20*deg 為漸開線函數
-        sigma=pi/(2*n)+tan(20*deg)-20*deg
-        for j in range(n):
-            ang=-2.*j*pi/n+sigma
-            ang2=2.*j*pi/n+sigma
-            lxd=midx+rd*sin(ang2-2.*pi/n)
-            lyd=midy-rd*cos(ang2-2.*pi/n)
-            #for(i=0;i<=imax;i++):
-            for i in range(imax+1):
-                r=rb+i*dr
-                theta=sqrt((r*r)/(rb*rb)-1.)
-                alpha=theta-atan(theta)
-                xpt=r*sin(alpha-ang)
-                ypt=r*cos(alpha-ang)
-                xd=rd*sin(-ang)
-                yd=rd*cos(-ang)
-                # i=0 時, 繪線起點由齒根圓上的點, 作為起點
-                if(i==0):
-                    last_x = midx+xd
-                    last_y = midy-yd
-                # 由左側齒根圓作為起點, 除第一點 (xd,yd) 齒根圓上的起點外, 其餘的 (xpt,ypt)則為漸開線上的分段點
-                create_line((midx+xpt),(midy-ypt),(last_x),(last_y),fill=顏色)
-                # 最後一點, 則為齒頂圓
-                if(i==imax):
-                    lfx=midx+xpt
-                    lfy=midy-ypt
-                last_x = midx+xpt
-                last_y = midy-ypt
-            # the line from last end of dedendum point to the recent
-            # end of dedendum point
-            # lxd 為齒根圓上的左側 x 座標, lyd 則為 y 座標
-            # 下列為齒根圓上用來近似圓弧的直線
-            create_line((lxd),(lyd),(midx+xd),(midy-yd),fill=顏色)
-            #for(i=0;i<=imax;i++):
-            for i in range(imax+1):
-                r=rb+i*dr
-                theta=sqrt((r*r)/(rb*rb)-1.)
-                alpha=theta-atan(theta)
-                xpt=r*sin(ang2-alpha)
-                ypt=r*cos(ang2-alpha)
-                xd=rd*sin(ang2)
-                yd=rd*cos(ang2)
-                # i=0 時, 繪線起點由齒根圓上的點, 作為起點
-                if(i==0):
-                    last_x = midx+xd
-                    last_y = midy-yd
-                # 由右側齒根圓作為起點, 除第一點 (xd,yd) 齒根圓上的起點外, 其餘的 (xpt,ypt)則為漸開線上的分段點
-                create_line((midx+xpt),(midy-ypt),(last_x),(last_y),fill=顏色)
-                # 最後一點, 則為齒頂圓
-                if(i==imax):
-                    rfx=midx+xpt
-                    rfy=midy-ypt
-                last_x = midx+xpt
-                last_y = midy-ypt
-            # lfx 為齒頂圓上的左側 x 座標, lfy 則為 y 座標
-            # 下列為齒頂圓上用來近似圓弧的直線
-            create_line(lfx,lfy,rfx,rfy,fill=顏色)
-
-    gear(400,400,300,41,"blue")
-    </script>
-    <canvas id="plotarea" width="800" height="800"></canvas>
+    <body>
+    <!-- 使用者輸入表單的參數交由 cubeaction 方法處理 -->
+    <form method=POST action=cubeaction>
+    正方體邊長:<input type=text name=W value='''+str(W)+'''><br />
+    <input type=submit value=送出>
+    </form>
+    <br /><a href="index">index</a><br />
     </body>
     </html>
     '''
 
         return outstring
-    #@+node:2014fall.20141215194146.1793: *3* doCheck
     @cherrypy.expose
-    def doCheck(self, guess=None):
-        # 假如使用者直接執行 doCheck, 則設法轉回根方法
-        if guess is None:
-            raise cherrypy.HTTPRedirect("/")
-        # 從 session 取出 answer 對應資料, 且處理直接執行 doCheck 時無法取 session 值情況
+    # W 為正方體邊長, 內定值為 10
+    def cubeaction(self, W=10):
+        outstring = '''
+    <!DOCTYPE html> 
+    <html>
+    <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <!-- 先載入 pfcUtils.js 與 wl_header.js -->
+    <script type="text/javascript" src="/static/weblink/pfcUtils.js"></script>
+    <script type="text/javascript" src="/static/weblink/wl_header.js">
+    <!-- 載入 brython.js -->
+    <script type="text/javascript" src="/static/Brython3.1.1-20150328-091302/brython.js"></script>
+    document.writeln ("Error loading Pro/Web.Link header!");
+    </script>
+    <script>
+    window.onload=function(){
+    brython();
+    }
+    </script>
+    </head>
+    <!-- 不要使用 body 啟動 brython() 改為 window level 啟動 -->
+    <body onload="">
+    <h1>Creo 參數化零件</h1>
+    <a href="index">index</a><br />
+
+    <!-- 以下為 Creo Pro/Web.Link 程式, 將 JavaScrip 改為 Brython 程式 -->
+
+    <script type="text/python">
+    from browser import document, window
+    from math import *
+
+    # 這個區域為 Brython 程式範圍, 註解必須採用 Python 格式
+    # 因為 pfcIsWindows() 為原生的 JavaScript 函式, 在 Brython 中引用必須透過 window 物件
+    if (!window.pfcIsWindows()) window.netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+    # 若第三輸入為 false, 表示僅載入 session, 但是不顯示
+    # ret 為 model open return
+    ret = document.pwl.pwlMdlOpen("cube.prt", "v:/tmp", false)
+    if (!ret.Status):
+        window.alert("pwlMdlOpen failed (" + ret.ErrorCode + ")")
+        # 將 ProE 執行階段設為變數 session
+        session = window.pfcGetProESession()
+        # 在視窗中打開零件檔案, 並且顯示出來
+        pro_window = session.OpenFile(pfcCreate("pfcModelDescriptor").CreateFromFileName("cube.prt"))
+        solid = session.GetModel("cube.prt", window.pfcCreate("pfcModelType").MDL_PART)
+        # 在 Brython 中與 Python 語法相同, 只有初值設定問題, 無需宣告變數
+        # length, width, myf, myn, i, j, volume, count, d1Value, d2Value
+        # 將模型檔中的 length 變數設為 javascript 中的 length 變數
+        length = solid.GetParam("a1")
+        # 將模型檔中的 width 變數設為 javascript 中的 width 變數
+        width = solid.GetParam("a2")
+        # 改變零件尺寸
+        # myf=20
+        # myn=20
+        volume = 0
+        count = 0
         try:
-            theanswer = int(cherrypy.session.get('answer'))
+            # 以下採用 URL 輸入對應變數
+            # createParametersFromArguments ();
+            # 以下則直接利用 javascript 程式改變零件參數
+            for i in range(5):
+                myf ='''+str(W)+'''
+                myn ='''+str(W)+''' + i*2.0
+                # 設定變數值, 利用 ModelItem 中的 CreateDoubleParamValue 轉換成 Pro/Web.Link 所需要的浮點數值
+                d1Value = window.pfcCreate ("MpfcModelItem").CreateDoubleParamValue(myf)
+                d2Value = window.pfcCreate ("MpfcModelItem").CreateDoubleParamValue(myn)
+                # 將處理好的變數值, 指定給對應的零件變數
+                length.Value = d1Value
+                width.Value = d2Value
+                # 零件尺寸重新設定後, 呼叫 Regenerate 更新模型
+                # 在 JavaScript 為 null 在 Brython 為 None
+                solid.Regenerate(None)
+                # 利用 GetMassProperty 取得模型的質量相關物件
+                properties = solid.GetMassProperty(None)
+                # volume = volume + properties.Volume
+                volume = properties.Volume
+                count = count + 1
+                window.alert("執行第"+count+"次,零件總體積:"+volume)
+                # 將零件存為新檔案
+                newfile = document.pwl.pwlMdlSaveAs("cube.prt", "v:/tmp", "cube"+count+".prt")
+                if (!newfile.Status):
+                    window.alert("pwlMdlSaveAs failed (" + newfile.ErrorCode + ")")
+                # window.alert("共執行:"+count+"次,零件總體積:"+volume)
+                # window.alert("零件體積:"+properties.Volume)
+                # window.alert("零件體積取整數:"+Math.round(properties.Volume));
         except:
-            raise cherrypy.HTTPRedirect("/")
-        # 經由表單所取得的 guess 資料型別為 string
-        try:
-            theguess = int(guess)
-        except:
-            return "error " + self.guessform()
-        # 每執行 doCheck 一次,次數增量一次
-        cherrypy.session['count']  += 1
-        # 答案與所猜數字進行比對
-        if theanswer < theguess:
-            return "big " + self.guessform()
-        elif theanswer > theguess:
-            return "small " + self.guessform()
-        else:
-            # 已經猜對, 從 session 取出累計猜測次數
-            thecount = cherrypy.session.get('count')
-            return "exact: <a href=''>再猜</a>"
-    #@+node:2014fall.20141215194146.1789: *3* guessform
-    def guessform(self):
-        # 印出讓使用者輸入的超文件表單
-        outstring = str(cherrypy.session.get('answer')) + "/" + str(cherrypy.session.get('count')) + '''<form method=POST action=doCheck>
-    請輸入您所猜的整數:<input type=text name=guess><br />
-    <input type=submit value=send>
-    </form>'''
+            window.alert ("Exception occurred: "+window.pfcGetExceptionType (err))
+    </script>
+    '''
+
         return outstring
-    #@-others
-#@-others
 ################# (4) 程式啟動區
 # 配合程式檔案所在目錄設定靜態目錄或靜態檔案
 application_conf = {'/static':{
@@ -764,8 +336,8 @@ application_conf = {'/static':{
         'tools.staticdir.dir': data_dir+"/images"}
     }
     
-root = Hello()
-root.gear = gear.Gear()
+root = Midterm()
+#root.gear = gear.Gear()
 
 if 'OPENSHIFT_REPO_DIR' in os.environ.keys():
     # 表示在 OpenSfhit 執行
@@ -773,4 +345,3 @@ if 'OPENSHIFT_REPO_DIR' in os.environ.keys():
 else:
     # 表示在近端執行
     cherrypy.quickstart(root, config=application_conf)
-#@-leo
